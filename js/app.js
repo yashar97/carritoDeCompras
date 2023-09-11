@@ -1,87 +1,88 @@
 //variables
-const listaCarrito = document.querySelector('#lista-carrito tbody');
 const listaCursos = document.querySelector('#lista-cursos');
-const carrito = document.querySelector('#carrito');
-const vaciarCarrito = document.querySelector('#vaciar-carrito');
-let carritoDeCompras = [];
+const carritoContenedor = document.querySelector('#carrito tbody');
+const vistaCarrito = document.querySelector('#carrito');
+const btnVaciarCarrito = document.querySelector('#vaciar-carrito');
+let carrito = [];
 
-
-//event listeners
-
-listaCursos.addEventListener('click', agregarCurso);
-carrito.addEventListener('click', eliminarCurso);
-vaciarCarrito.addEventListener('click', vaciar);
-
+//eventos
+listaCursos.addEventListener('click', leerCurso);
+vistaCarrito.addEventListener('click', eliminarProducto);
+btnVaciarCarrito.addEventListener('click', () => {
+    carrito = [];
+    limpiarHTML();
+});
 
 //funciones
 
-function vaciar() {
-    carritoDeCompras = [];
-    limpiarHTML();
-}
+function eliminarProducto(e) {
+    if(e.target.classList.contains('btn-eliminar')) {
+       const eliminar = e.target.parentElement;
+       const eliminarId = eliminar.querySelector('button').getAttribute('id');
 
-function eliminarCurso(e) {
-    if (e.target.classList.contains('borrar-carrito')) {
-        const existe = carritoDeCompras.find(element => `borrar${element.id}` === e.target.id);
-        if (existe.cantidad > 1) {
-            existe.cantidad--;
-            document.querySelector(`#und${existe.id}`).innerHTML = `<td id="und${existe.id}">${existe.cantidad}</td>`;
-            return;
-        } 
-            carritoDeCompras = carritoDeCompras.filter(element => `borrar${element.id}` !== e.target.id);
-            carritoHTML();
-            console.log(carritoDeCompras)
+       
+     
+            carrito = carrito.filter(element => element.id !== eliminarId);
+            eliminar.remove();
+     
         
-
+        
     }
+}   
 
-}
-
-function agregarCurso(e) {
+function leerCurso(e) {
     e.preventDefault();
-    if (e.target.classList.contains('agregar-carrito')) {
-        const cursoSeleccionado = e.target.parentElement.parentElement;
-        obtenerDatosDelCurso(cursoSeleccionado);
+    
+    if(e.target.classList.contains('agregar-carrito')) {
+        agregarAlCarrito(e.target.parentElement.parentElement);
     }
 }
 
-function obtenerDatosDelCurso(curso) {
-    const infoDelCurso = {
+function agregarAlCarrito(curso) {
+    //creamos el objeto curso
+    const infoCurso = {
         nombre: curso.querySelector('h4').textContent,
         precio: curso.querySelector('.precio span').textContent,
-        imagen: curso.querySelector('.card img').src,
-        cantidad: 1,
+        img: curso.querySelector('img').src,
         id: curso.querySelector('a').getAttribute('data-id'),
+        cantidad: 1,
     }
 
+    limpiarHTML();
 
-    const existe = carritoDeCompras.find(element => element.id === infoDelCurso.id);
-    if (existe) {
+    
+    
+    const existe = carrito.find(element => element.id === infoCurso.id);
+    
+    if(existe) {
         existe.cantidad++;
-        document.querySelector(`#und${existe.id}`).innerHTML = `<td id="und${existe.id}">${existe.cantidad}</td>`;
-    } else {
-        carritoDeCompras = [...carritoDeCompras, infoDelCurso];
-        carritoHTML();
+    }else {
+        carrito = [...carrito, infoCurso];
+        
     }
+    
+    mostrarCarrito();
 }
 
-
-function carritoHTML() {
-    limpiarHTML();
-    carritoDeCompras.forEach(element => {
-        const cursoEnCarrito = document.createElement('tr');
-        cursoEnCarrito.innerHTML = `
-        <td><img src="${element.imagen}" width="100"></td>
+function mostrarCarrito() {
+    carrito.forEach(element => {
+        const producto = document.createElement('tr');
+        producto.innerHTML = `
+        <td><img src="${element.img}" width="100"></td>
         <td>${element.nombre}</td>
         <td>${element.precio}</td>
-        <td id="und${element.id}">${element.cantidad}</td>
-        <td><a id="borrar${element.id}" class="borrar-carrito">X</a></td>
+        <td>${element.cantidad}</td>
+        <button id="${element.id}" class="btn-eliminar">Eliminar</button>
         `;
 
-        listaCarrito.appendChild(cursoEnCarrito);
-    })
+        carritoContenedor.appendChild(producto);
+
+        
+    });
 }
 
+
+
 function limpiarHTML() {
-    listaCarrito.innerHTML = "";
+    carritoContenedor.innerHTML = "";
 }
